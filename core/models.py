@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # --- Фундаментальные модели ---
 
@@ -13,6 +14,136 @@ class GameSystem(models.Model):
 
     def __str__(self):
         return f"{self.name} {self.version}"
+    
+class FeatureSet(models.Model):
+    """
+    Универсальная модель для именованной группы способностей.
+    (Домен в Daggerheart, Школа магии в D&D и т.д.)
+    """
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="feature_sets")
+    set_type = models.CharField(max_length=50, blank=True, help_text="Тип набора, например 'Domain'")
+
+    class Meta:
+        unique_together = ('system', 'name')
+        verbose_name = "Feature Set"
+        verbose_name_plural = "Feature Sets"
+
+    def __str__(self):
+        return f"{self.name} ({self.system.name})"
+    
+class Feature(models.Model):
+    """
+    Атомарная особенность, способность или заклинание.
+    """
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="features")
+    
+    # К какой группе/коллекции относится эта особенность (опционально)
+    feature_set = models.ForeignKey(
+        FeatureSet,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="features"
+    )
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE, # Если пользователь удаляется, его кастомные фичи тоже
+        null=True,
+        blank=True,
+        related_name='custom_features',
+        help_text="Если поле заполнено, эта 'особенность' создана пользователем (напр. Experience в Daggerheart)"
+    )
+    
+    # Системно-специфичные данные: требования, стоимость, ресурсы и т.д.
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        pass
+
+    def __str__(self):
+        if self.created_by:
+            return f"{self.name} (Custom, by {self.created_by.username})"
+        return f"{self.name} ({self.system.name})"
+    
+class TraitCategory(models.Model):
+    """
+    Определяет ТИП строительного блока для конкретной игровой системы.
+    Например: 'Класс', 'Раса', 'Происхождение', 'Предыстория', 'Клан'.
+    """
+    name = models.CharField(
+        max_length=100,
+        help_text="Тип характеристики, например, 'Класс' или 'Раса'"
+    )
+    system = models.ForeignKey(
+        GameSystem,
+        on_delete=models.CASCADE,
+        related_name="trait_categories"
+    )
+
+    class Meta:
+        # Имя категории должно быть уникальным в рамках одной игровой системы.
+        # Не может быть двух категорий "Класс" для Daggerheart.
+        unique_together = ('name', 'system')
+        # Для корректного отображения в админке
+        verbose_name = "Trait Category"
+        verbose_name_plural = "Trait Categories"
+
+    def __str__(self):
+        return f"{self.name} ({self.system.name})"
+    
+class CharacterTrait(models.Model):
+    """
+    УНИВЕРСАЛЬНАЯ МОДЕЛЬ для любого строительного блока персонажа.
+    Это может быть класс, раса, происхождение, подкласс - что угодно.
+    """
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    
+    # К какой игровой системе относится эта "черта"
+    system = models.ForeignKey(
+        GameSystem,
+        on_delete=models.CASCADE,
+        related_name="character_traits"
+    )
+    
+    # К какой категории относится эта "черта"? Это Класс? Раса?
+    category = models.ForeignKey(
+        TraitCategory,
+        on_delete=models.PROTECT, # Запрещаем удалять категорию, если к ней привязаны черты
+        related_name="traits"
+    )
+    
+    # Рекурсивная связь для поддержки иерархии (подклассы, подрасы)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL, # Если родитель удалится, подкласс не удаляется, а становится "корневым"
+        null=True,
+        blank=True,
+        related_name='children'
+    )
+
+    # Какие особенности предоставляет эта черта (класс, раса и т.д.)
+    features = models.ManyToManyField(Feature, blank=True)
+
+    # Наше поле для хранения любых системно-специфичных данных
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Системно-специфичные данные, например, hit_die для D&D или base_evasion для Daggerheart"
+    )
+
+    class Meta:
+        unique_together = ('system', 'category', 'name')
+        verbose_name = "Character Trait"
+        verbose_name_plural = "Character Traits"
+
+    def __str__(self):
+        return f"{self.name} ({self.category.name} | {self.system.name})"
 
 class DamageType(models.Model):
     """
@@ -23,97 +154,30 @@ class DamageType(models.Model):
     system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="damage_types")
 
     class Meta:
-        unique_together = ('name', 'system') # Тип урона должен быть уникальным в рамках одной системы
+        unique_together = ('name', 'system')
 
     def __str__(self):
         return f"{self.name} ({self.system.name})"
 
-class Feature(models.Model):
-    """
-    Ключевая модель! Это любая атомарная особенность или способность.
-    Например: "Ночное зрение", "Компетентность в тяжелой броне", "Уязвимость к огню".
-    """
-    name = models.CharField(max_length=200, help_text="Название особенности")
-    description = models.TextField(help_text="Подробное описание того, что делает особенность")
-    system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="features")
-    
-    class Meta:
-        unique_together = ('name', 'system')
-
-    def __str__(self):
-        return self.name
-
-# --- Модели "Строительных блоков" персонажа ---
-
-class Ancestry(models.Model):
-    """Происхождение персонажа (аналог Расы в D&D)."""
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="ancestries")
-    # Происхождение предоставляет персонажу набор особенностей
-    features = models.ManyToManyField(Feature, blank=True, related_name="ancestries")
-
-    class Meta:
-        unique_together = ('name', 'system')
-        verbose_name_plural = "Ancestries" # Для корректного отображения в админке
-
-    def __str__(self):
-        return self.name
-
-class Community(models.Model):
-    """Сообщество персонажа (аналог Предыстории в D&D)."""
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="communities")
-    features = models.ManyToManyField(Feature, blank=True, related_name="communities")
-
-    class Meta:
-        unique_together = ('name', 'system')
-        verbose_name_plural = "Communities"
-
-    def __str__(self):
-        return self.name
-
-class CharacterClass(models.Model):
-    """Игровой класс персонажа."""
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="classes")
-    features = models.ManyToManyField(Feature, blank=True, related_name="classes")
-
-    # Наше "секретное оружие" для гибкости.
-    # Сюда можно будет записывать уникальные для системы поля.
-    # Например, для D&D: {"hit_die": "d8"}, для Daggerheart: {"primary_domains": ["blade", "valor"]}
-    metadata = models.JSONField(default=dict, blank=True)
-
-    class Meta:
-        unique_together = ('name', 'system')
-        verbose_name_plural = "Character Classes"
-
-    def __str__(self):
-        return self.name
-
-
 # --- Модели Предметов ---
 
-class Item(models.Model):
-    """Базовая модель для всех предметов в игре."""
+class EquipmentTemplate(models.Model):
+    """
+    УНИВЕРСАЛЬНАЯ МОДЕЛЬ для любого предмета, которым может владеть персонаж.
+    Это может быть оружие, броня, имплант, запчасть для меха, зелье, квестовый предмет.
+    """
     name = models.CharField(max_length=200)
-    description = models.TextField()
-    system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="items")
-    metadata = models.JSONField(default=dict, blank=True, help_text="Доп. поля, например, вес, стоимость и т.д.")
+    description = models.TextField(blank=True)
+    system = models.ForeignKey(GameSystem, on_delete=models.CASCADE, related_name="equipment_templates")
+
+    # Вместо жестких полей, у нас есть поле для всего
+    metadata = models.JSONField(default=dict, blank=True)
     
     class Meta:
-        unique_together = ('name', 'system')
+        unique_together = ('system', 'name')
+        verbose_name = "Equipment Template"
+        verbose_name_plural = "Equipment Templates"
 
     def __str__(self):
-        return self.name
-
-class Weapon(Item):
-    """Модель для оружия, наследуется от Item."""
-    damage_dice = models.CharField(max_length=50, help_text="Кости урона, например, '1d8' или '2d6'")
-    damage_type = models.ForeignKey(DamageType, on_delete=models.PROTECT, related_name="weapons")
-
-    def __str__(self):
-        return f"{self.name} ({self.damage_dice} {self.damage_type.name})"
+        return f"{self.name} ({self.system.name})"
         
