@@ -16,13 +16,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+# Импортируем вью для генерации схемы и UI
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 urlpatterns = [
-    # Стандартная админ-панель
     path('admin/', admin.site.urls),
     
-    # Наша новая точка входа для API v1
-    # Мы будем подключать сюда роутеры из наших приложений
+    # Наши основные эндпоинты API
     path('api/v1/', include('core.urls')),
     path('api/v1/', include('characters.urls')),
+
+    # --- НОВЫЕ ПУТИ ДЛЯ ДОКУМЕНТАЦИИ ---
+    
+    # Эндпоинт, который генерирует сам файл schema.yml
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    
+    # Опционально: Интерактивная документация Swagger UI
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    
+    # Опционально: Альтернативная документация Redoc
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]

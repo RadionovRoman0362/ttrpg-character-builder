@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     # Third-party Apps
     'rest_framework',
+    'drf_spectacular',
 
     # Our Project Apps
     'core.apps.CoreConfig',
@@ -142,10 +143,19 @@ REST_FRAMEWORK = {
 
     # Пока разрешим доступ всем для простоты разработки.
     # В будущем здесь будет TokenAuthentication.
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'TTRPG Character Builder API',
+    'DESCRIPTION': 'API documentation for the TTRPG Character Builder project. '
+                   'This API allows managing game systems, rules, and character sheets.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False, # Не показывать схему по умолчанию в UI
 }

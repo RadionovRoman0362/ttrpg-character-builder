@@ -1,11 +1,19 @@
 from django.shortcuts import render
-
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from .models import GameSystem, CharacterTrait
-from .serializers import GameSystemSerializer, CharacterTraitSerializer
+from .models import GameSystem, CharacterTrait, EquipmentTemplate, Feature
+from .serializers import (
+    GameSystemSerializer,
+    CharacterTraitSerializer,
+    EquipmentTemplateSerializer,
+    FeatureSerializer
+)
 
+# Мы добавим недостающие ViewSet'ы для полноты картины
+
+@extend_schema(tags=['Core - Game Systems'])
 class GameSystemViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API эндпоинт для просмотра игровых систем.
@@ -16,6 +24,7 @@ class GameSystemViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 
+@extend_schema(tags=['Core - Rules'])
 class CharacterTraitViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API эндпоинт для просмотра "строительных блоков" (классов, рас и т.д.).
@@ -25,29 +34,68 @@ class CharacterTraitViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        """
-        Этот метод переопределяется для динамической фильтрации.
-        Мы будем получать только те трейты, которые относятся к нужной системе.
-        """
-        # Получаем slug системы из URL-адреса
-        # (?P<system_slug>...) в urls.py
         system_pk = self.kwargs.get('system_pk')
         if not system_pk:
             return CharacterTrait.objects.none()
         
-        # Фильтруем основной queryset по PK системы
         queryset = CharacterTrait.objects.filter(system__pk=system_pk)
-
-        # Дополнительно фильтруем по категории, если она указана в query-параметрах
-        # Например: /api/v1/.../traits/?category=Class
+        
         category_name = self.request.query_params.get('category')
         if category_name:
-            # Фильтруем по имени категории
-            # __iexact делает поиск нечувствительным к регистру
             queryset = queryset.filter(category__name__iexact=category_name)
         
-        # Мы хотим получать только "корневые" трейты (те, у которых нет родителя)
-        # Например, при запросе классов мы хотим видеть "Guardian", а не "Stalwart".
-        # "Stalwart" будет виден внутри "Guardian" благодаря вложенному сериализатору.
         return queryset.filter(parent__isnull=True).prefetch_related('features', 'children')
+
+    @extend_schema(
+        summary="Список строительных блоков системы",
+        description="Получить список корневых строительных блоков (например, классов или рас) для конкретной игровой системы.",
+        parameters=[
+            OpenApiParameter(
+                name='category', 
+                description='Фильтр по имени категории (например, Class, Ancestry). Регистронезависимый.', 
+                required=False, 
+                type=str,
+                location=OpenApiParameter.QUERY
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Получить список корневых Character Traits для системы."""
+        return super().list(request, *args, **kwargs)
     
+    @extend_schema(summary="Детальная информация о блоке")
+    def retrieve(self, request, *args, **kwargs):
+        """Получить полную информацию об одном Character Trait, включая подклассы и особенности."""
+        return super().retrieve(request, *args, **kwargs)
+
+
+@extend_schema(tags=['Core - Rules'])
+class EquipmentTemplateViewSet(viewsets.ReadOnlyModelViewSet):
+    """API эндпоинт для просмотра шаблонов экипировки."""
+    queryset = EquipmentTemplate.objects.all()
+    serializer_class = EquipmentTemplateSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(summary="Список всех шаблонов экипировки")
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(summary="Детальная информация о шаблоне экипировки")
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+
+@extend_schema(tags=['Core - Rules'])
+class FeatureViewSet(viewsets.ReadOnlyModelViewSet):
+    """API эндпоинт для просмотра всех особенностей (Features)."""
+    queryset = Feature.objects.all()
+    serializer_class = FeatureSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(summary="Список всех особенностей")
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(summary="Детальная информация об особенности")
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)

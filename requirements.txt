@@ -3,3 +3,4 @@ djangorestframework
 psycopg2-binary
 python-dotenv
 drf-nested-routers
+drf-spectacular
