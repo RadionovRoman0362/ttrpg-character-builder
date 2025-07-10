@@ -1,4 +1,5 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from .models import CharacterSheet
@@ -8,6 +9,7 @@ from .serializers import (
     CharacterSheetDetailSerializer,
     CharacterSheetCreateUpdateSerializer,
 )
+from .services import CharacterStateService
 
 
 @extend_schema(tags=["Characters"])
@@ -78,3 +80,45 @@ class CharacterSheetViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return CharacterSheetDetailSerializer
         return CharacterSheetListSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Стандартное сохранение, которое создает объект и M2M связи
+        instance = serializer.save(player=self.request.user)
+
+        # Принудительно обновляем инстанс из БД, чтобы подтянуть M2M связи
+        instance.refresh_from_db()
+
+        # А ТЕПЕРЬ, когда все связи установлены, вызываем сервис
+        state_service = CharacterStateService()
+        recalculated_instance = state_service.recalculate_and_save(character=instance)
+
+        # Формируем ответ на основе самого свежего объекта
+        response_serializer = CharacterSheetDetailSerializer(recalculated_instance)
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(
+            response_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # Стандартное обновление
+        updated_instance = serializer.save()
+
+        updated_instance.refresh_from_db()
+
+        # И снова вызываем сервис ПОСЛЕ всех операций
+        state_service = CharacterStateService()
+        recalculated_instance = state_service.recalculate_and_save(
+            character=updated_instance
+        )
+
+        # Формируем ответ
+        response_serializer = CharacterSheetDetailSerializer(recalculated_instance)
+        return Response(response_serializer.data)

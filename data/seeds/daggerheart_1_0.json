@@ -2,7 +2,33 @@
   "system": {
     "name": "Daggerheart",
     "version": "1.0",
-    "slug": "daggerheart"
+    "slug": "daggerheart",
+    "metadata": {
+      "character_sheet_schema": {
+        "computed_stats": {
+          "max_hp": {
+            "formula": "trait_meta('Class', 'base_hp') + stat('level')",
+            "depends_on": ["traits", "stats"]
+          },
+          "max_stress": {
+            "formula": "trait_meta('Class', 'base_stress')",
+            "depends_on": ["traits"]
+          },
+          "evasion": {
+            "formula": "trait_meta('Class', 'base_evasion') + equipment_meta('armor', 'evasion_penalty')",
+            "depends_on": ["traits", "equipment"]
+          },
+          "damage_threshold_major": {
+            "formula": "equipment_meta('armor', 'base_thresholds.major') + stat('level')",
+            "depends_on": ["equipment", "stats"]
+          },
+          "damage_threshold_severe": {
+            "formula": "equipment_meta('armor', 'base_thresholds.severe') + stat('level')",
+            "depends_on": ["equipment", "stats"]
+          }
+        }
+      }
+    }
   },
   "trait_categories": [
     "Class",
@@ -113,6 +139,32 @@
       "description": "You grew up in a life of relative privilege and comfort.",
       "features": ["Resourceful"],
       "metadata": {}
+    }
+  ],
+  "equipment_templates": [
+    {
+      "name": "Leather Armor",
+      "metadata": {
+        "type": "armor",
+        "location": "armor",
+        "evasion_penalty": 0,
+        "base_thresholds": {
+          "major": 6,
+          "severe": 13
+        }
+      }
+    },
+    {
+      "name": "Chainmail Armor",
+      "metadata": {
+        "type": "armor",
+        "location": "armor",
+        "evasion_penalty": -1,
+        "base_thresholds": {
+          "major": 7,
+          "severe": 15
+        }
+      }
     }
   ]
 }

@@ -10,6 +10,7 @@ from core.models import (
     FeatureSet,
     Feature,
     CharacterTrait,
+    EquipmentTemplate,
 )
 
 
@@ -81,6 +82,25 @@ class Command(BaseCommand):
             ignore_conflicts=True,
         )
         self.stdout.write("Loaded Trait Categories, Damage Types, and Feature Sets.")
+
+        equipment_templates_data = data.get("equipment_templates", [])
+        equipment_templates_to_create = []
+        for eq_data in equipment_templates_data:
+            equipment_templates_to_create.append(
+                EquipmentTemplate(
+                    name=eq_data["name"],
+                    system=system,
+                    description=eq_data.get("description", ""),
+                    metadata=eq_data.get("metadata", {}),
+                )
+            )
+
+        EquipmentTemplate.objects.bulk_create(
+            equipment_templates_to_create, ignore_conflicts=True
+        )
+        self.stdout.write(
+            f"Loaded {len(equipment_templates_to_create)} Equipment Templates."
+        )
 
         # --- 3. Создаем Features (без связей) ---
         # Мы не можем использовать bulk_create здесь, так как нам нужно будет связывать их.
