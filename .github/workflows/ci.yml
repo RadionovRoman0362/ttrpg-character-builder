@@ -8,39 +8,33 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # Название нашего "задания"
   build-and-test:
-    # На какой операционной системе запускать
     runs-on: ubuntu-latest
     
-    # Шаги, которые будут выполняться последовательно
     steps:
-    # 1. Скачиваем код из нашего репозитория
     - uses: actions/checkout@v3
 
-    # 2. Настраиваем Python
     - name: Set up Python 3.11
       uses: actions/setup-python@v3
       with:
         python-version: "3.11"
 
-    # 3. Устанавливаем зависимости
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install flake8 pytest # Устанавливаем инструменты для тестов и линтинга
 
-    # 4. Запускаем линтер (проверка стиля)
+    - name: Check formatting with Black
+      run: |
+        # Флаг --check говорит Black не изменять файлы, а только
+        # проверить, нужно ли их изменять. Если нужно - он выйдет с ошибкой.
+        black --check .
+
     - name: Lint with flake8
       run: |
-        # --count покажет количество ошибок
-        # --show-source покажет проблемные строки
-        # --statistics покажет статистику по ошибкам
         flake8 . --count --show-source --statistics
 
-    # 5. Запускаем тесты (пока у нас их нет, этот шаг будет пустым, но он нужен)
-    # В будущем здесь будет команда `pytest`
     - name: Run Tests
       run: |
         echo "No tests to run yet."

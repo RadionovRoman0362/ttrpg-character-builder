@@ -1,0 +1,13 @@
+default_language_version:
+    python: python3
+
+repos:
+-   repo: https://github.com/psf/black
+    rev: 25.1.0 # Рекомендуется использовать актуальную версию
+    hooks:
+    -   id: black
+
+-   repo: https://github.com/pycqa/flake8
+    rev: 7.3.0 # Рекомендуется использовать актуальную версию
+    hooks:
+    -   id: flake8
