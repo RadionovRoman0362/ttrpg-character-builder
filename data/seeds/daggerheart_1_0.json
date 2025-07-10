@@ -1,0 +1,118 @@
+{
+  "system": {
+    "name": "Daggerheart",
+    "version": "1.0",
+    "slug": "daggerheart"
+  },
+  "trait_categories": [
+    "Class",
+    "Subclass",
+    "Ancestry",
+    "Community"
+  ],
+  "damage_types": [
+    "Physical",
+    "Magical"
+  ],
+  "feature_sets": [
+    {
+      "name": "Blade",
+      "set_type": "Domain"
+    },
+    {
+      "name": "Valor",
+      "set_type": "Domain"
+    }
+  ],
+  "features": [
+    {
+      "name": "Frontline Tank",
+      "description": "Spend 3 Hope to clear 2 Armor Slots.",
+      "feature_set": null,
+      "metadata": {
+        "type": "class_feature"
+      }
+    },
+    {
+      "name": "Combat Training",
+      "description": "You gain a bonus to your damage thresholds equal to your level.",
+      "feature_set": null,
+      "metadata": {
+        "type": "class_feature"
+      }
+    },
+    {
+      "name": "Reckless",
+      "description": "Mark a Stress to gain advantage on an attack roll against an adversary within Melee range.",
+      "feature_set": "Valor",
+      "metadata": {
+        "type": "domain_card",
+        "level_requirement": 1
+      }
+    },
+    {
+      "name": "Versatile",
+      "description": "You are able to adapt to a number of situations, drawing on your broad range of experiences.",
+      "feature_set": null,
+      "metadata": {
+        "type": "ancestry_trait"
+      }
+    },
+    {
+      "name": "Resourceful",
+      "description": "When you would spend a Hope, you can mark a Stress instead.",
+      "feature_set": null,
+      "metadata": {
+        "type": "community_trait"
+      }
+    }
+  ],
+  "character_traits": [
+    {
+      "category": "Class",
+      "name": "Guardian",
+      "description": "Guardians are defensive powerhouses, able to take a huge amount of punishment and protect their allies.",
+      "features": ["Frontline Tank", "Combat Training"],
+      "metadata": {
+        "base_evasion": 8,
+        "base_hp": 12,
+        "base_stress": 6,
+        "grants_access_to": {
+          "type": "FeatureSet",
+          "set_type": "Domain",
+          "names": ["Blade", "Valor"]
+        }
+      }
+    },
+    {
+      "category": "Subclass",
+      "name": "Stalwart",
+      "parent": "Guardian",
+      "description": "Stalwarts focus on enduring blows and standing their ground.",
+      "features": [],
+      "metadata": {}
+    },
+    {
+      "category": "Subclass",
+      "name": "Vengeance",
+      "parent": "Guardian",
+      "description": "Vengeance Guardians strike back at those who harm their allies.",
+      "features": [],
+      "metadata": {}
+    },
+    {
+      "category": "Ancestry",
+      "name": "Human",
+      "description": "Humans are a versatile and widespread people.",
+      "features": ["Versatile"],
+      "metadata": {}
+    },
+    {
+      "category": "Community",
+      "name": "Highborne",
+      "description": "You grew up in a life of relative privilege and comfort.",
+      "features": ["Resourceful"],
+      "metadata": {}
+    }
+  ]
+}
