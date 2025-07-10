@@ -14,26 +14,31 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
+
 # Импортируем вью для генерации схемы и UI
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    
+    path("admin/", admin.site.urls),
     # Наши основные эндпоинты API
-    path('api/v1/', include('core.urls')),
-    path('api/v1/', include('characters.urls')),
-
+    path("api/v1/", include("core.urls")),
+    path("api/v1/", include("characters.urls")),
     # --- НОВЫЕ ПУТИ ДЛЯ ДОКУМЕНТАЦИИ ---
-    
     # Эндпоинт, который генерирует сам файл schema.yml
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Опционально: Интерактивная документация Swagger UI
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
     # Опционально: Альтернативная документация Redoc
-    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]

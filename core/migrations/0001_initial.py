@@ -15,103 +15,276 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='FeatureSet',
+            name="FeatureSet",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True)),
-                ('set_type', models.CharField(blank=True, help_text="Тип набора, например 'Domain'", max_length=50)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "set_type",
+                    models.CharField(
+                        blank=True,
+                        help_text="Тип набора, например 'Domain'",
+                        max_length=50,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Feature Set',
-                'verbose_name_plural': 'Feature Sets',
+                "verbose_name": "Feature Set",
+                "verbose_name_plural": "Feature Sets",
             },
         ),
         migrations.CreateModel(
-            name='GameSystem',
+            name="GameSystem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Название игровой системы, например, Daggerheart', max_length=100, unique=True)),
-                ('version', models.CharField(blank=True, help_text='Версия системы, например, 1.0', max_length=20)),
-                ('slug', models.SlugField(help_text="Короткое имя для URL, например, 'daggerheart'", unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Название игровой системы, например, Daggerheart",
+                        max_length=100,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "version",
+                    models.CharField(
+                        blank=True,
+                        help_text="Версия системы, например, 1.0",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "slug",
+                    models.SlugField(
+                        help_text="Короткое имя для URL, например, 'daggerheart'",
+                        unique=True,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Feature',
+            name="Feature",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.TextField()),
-                ('metadata', models.JSONField(blank=True, default=dict)),
-                ('created_by', models.ForeignKey(blank=True, help_text="Если поле заполнено, эта 'особенность' создана пользователем (напр. Experience в Daggerheart)", null=True, on_delete=django.db.models.deletion.CASCADE, related_name='custom_features', to=settings.AUTH_USER_MODEL)),
-                ('feature_set', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='features', to='core.featureset')),
-                ('system', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='features', to='core.gamesystem')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("description", models.TextField()),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Если поле заполнено, эта 'особенность' создана пользователем (напр. Experience в Daggerheart)",
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="custom_features",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "feature_set",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="features",
+                        to="core.featureset",
+                    ),
+                ),
+                (
+                    "system",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="features",
+                        to="core.gamesystem",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='featureset',
-            name='system',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='feature_sets', to='core.gamesystem'),
+            model_name="featureset",
+            name="system",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="feature_sets",
+                to="core.gamesystem",
+            ),
         ),
         migrations.CreateModel(
-            name='TraitCategory',
+            name="TraitCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text="Тип характеристики, например, 'Класс' или 'Раса'", max_length=100)),
-                ('system', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='trait_categories', to='core.gamesystem')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Тип характеристики, например, 'Класс' или 'Раса'",
+                        max_length=100,
+                    ),
+                ),
+                (
+                    "system",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="trait_categories",
+                        to="core.gamesystem",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Trait Category',
-                'verbose_name_plural': 'Trait Categories',
-                'unique_together': {('name', 'system')},
+                "verbose_name": "Trait Category",
+                "verbose_name_plural": "Trait Categories",
+                "unique_together": {("name", "system")},
             },
         ),
         migrations.AlterUniqueTogether(
-            name='featureset',
-            unique_together={('system', 'name')},
+            name="featureset",
+            unique_together={("system", "name")},
         ),
         migrations.CreateModel(
-            name='EquipmentTemplate',
+            name="EquipmentTemplate",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.TextField(blank=True)),
-                ('metadata', models.JSONField(blank=True, default=dict)),
-                ('system', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='equipment_templates', to='core.gamesystem')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("description", models.TextField(blank=True)),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                (
+                    "system",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="equipment_templates",
+                        to="core.gamesystem",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Equipment Template',
-                'verbose_name_plural': 'Equipment Templates',
-                'unique_together': {('system', 'name')},
+                "verbose_name": "Equipment Template",
+                "verbose_name_plural": "Equipment Templates",
+                "unique_together": {("system", "name")},
             },
         ),
         migrations.CreateModel(
-            name='DamageType',
+            name="DamageType",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Название типа урона', max_length=50)),
-                ('system', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='damage_types', to='core.gamesystem')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(help_text="Название типа урона", max_length=50),
+                ),
+                (
+                    "system",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="damage_types",
+                        to="core.gamesystem",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('name', 'system')},
+                "unique_together": {("name", "system")},
             },
         ),
         migrations.CreateModel(
-            name='CharacterTrait',
+            name="CharacterTrait",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.TextField(blank=True)),
-                ('metadata', models.JSONField(blank=True, default=dict, help_text='Системно-специфичные данные, например, hit_die для D&D или base_evasion для Daggerheart')),
-                ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='core.charactertrait')),
-                ('features', models.ManyToManyField(blank=True, to='core.feature')),
-                ('system', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='character_traits', to='core.gamesystem')),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='traits', to='core.traitcategory')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "metadata",
+                    models.JSONField(
+                        blank=True,
+                        default=dict,
+                        help_text="Системно-специфичные данные, например, hit_die для D&D или base_evasion для Daggerheart",
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="children",
+                        to="core.charactertrait",
+                    ),
+                ),
+                ("features", models.ManyToManyField(blank=True, to="core.feature")),
+                (
+                    "system",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="character_traits",
+                        to="core.gamesystem",
+                    ),
+                ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="traits",
+                        to="core.traitcategory",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Character Trait',
-                'verbose_name_plural': 'Character Traits',
-                'unique_together': {('system', 'category', 'name')},
+                "verbose_name": "Character Trait",
+                "verbose_name_plural": "Character Traits",
+                "unique_together": {("system", "category", "name")},
             },
         ),
     ]

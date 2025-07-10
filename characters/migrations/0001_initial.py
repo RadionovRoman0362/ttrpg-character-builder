@@ -10,45 +10,141 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CharacterSheet',
+            name="CharacterSheet",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Имя персонажа/существа', max_length=200)),
-                ('stats', models.JSONField(blank=True, default=dict, help_text='Все характеристики, ресурсы (HP, мана), и вычисляемые параметры (Evasion)')),
-                ('conditions', models.JSONField(blank=True, default=list, help_text="Список активных состояний, например, ['poisoned', 'vulnerable']")),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('controlled_by', models.ForeignKey(blank=True, help_text='Если этот лист является питомцем, здесь указывается его хозяин', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='companions', to='characters.charactersheet')),
-                ('features', models.ManyToManyField(blank=True, help_text='Набор всех полученных особенностей и способностей', to='core.feature')),
-                ('player', models.ForeignKey(help_text='Пользователь, владеющий этим листом персонажа', on_delete=django.db.models.deletion.CASCADE, related_name='character_sheets', to=settings.AUTH_USER_MODEL)),
-                ('system', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='character_sheets', to='core.gamesystem')),
-                ('traits', models.ManyToManyField(blank=True, help_text='Набор выбранных черт: класс, раса, происхождение и т.д.', to='core.charactertrait')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Имя персонажа/существа", max_length=200
+                    ),
+                ),
+                (
+                    "stats",
+                    models.JSONField(
+                        blank=True,
+                        default=dict,
+                        help_text="Все характеристики, ресурсы (HP, мана), и вычисляемые параметры (Evasion)",
+                    ),
+                ),
+                (
+                    "conditions",
+                    models.JSONField(
+                        blank=True,
+                        default=list,
+                        help_text="Список активных состояний, например, ['poisoned', 'vulnerable']",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "controlled_by",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Если этот лист является питомцем, здесь указывается его хозяин",
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="companions",
+                        to="characters.charactersheet",
+                    ),
+                ),
+                (
+                    "features",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="Набор всех полученных особенностей и способностей",
+                        to="core.feature",
+                    ),
+                ),
+                (
+                    "player",
+                    models.ForeignKey(
+                        help_text="Пользователь, владеющий этим листом персонажа",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="character_sheets",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "system",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="character_sheets",
+                        to="core.gamesystem",
+                    ),
+                ),
+                (
+                    "traits",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="Набор выбранных черт: класс, раса, происхождение и т.д.",
+                        to="core.charactertrait",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Character Sheet',
-                'verbose_name_plural': 'Character Sheets',
+                "verbose_name": "Character Sheet",
+                "verbose_name_plural": "Character Sheets",
             },
         ),
         migrations.CreateModel(
-            name='CharacterEquipment',
+            name="CharacterEquipment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.PositiveIntegerField(default=1)),
-                ('location', models.CharField(default='inventory', max_length=50)),
-                ('metadata', models.JSONField(blank=True, default=dict)),
-                ('parent_equipment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='attachments', to='characters.characterequipment')),
-                ('template', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.equipmenttemplate')),
-                ('character', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='equipment', to='characters.charactersheet')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("quantity", models.PositiveIntegerField(default=1)),
+                ("location", models.CharField(default="inventory", max_length=50)),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                (
+                    "parent_equipment",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="attachments",
+                        to="characters.characterequipment",
+                    ),
+                ),
+                (
+                    "template",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="core.equipmenttemplate",
+                    ),
+                ),
+                (
+                    "character",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="equipment",
+                        to="characters.charactersheet",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Character Equipment',
-                'verbose_name_plural': 'Character Equipment',
+                "verbose_name": "Character Equipment",
+                "verbose_name_plural": "Character Equipment",
             },
         ),
     ]

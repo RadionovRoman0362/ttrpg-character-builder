@@ -6,45 +6,47 @@ from .models import (
     FeatureSet,
     Feature,
     EquipmentTemplate,
-    DamageType
+    DamageType,
 )
 
 # --- Базовые сериализаторы ---
 
+
 class GameSystemSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameSystem
-        fields = ['id', 'name', 'version', 'slug']
+        fields = ["id", "name", "version", "slug"]
 
 
 class DamageTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = DamageType
-        fields = ['id', 'name']
+        fields = ["id", "name"]
 
 
 class FeatureSetSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeatureSet
-        fields = ['id', 'name', 'description', 'set_type']
+        fields = ["id", "name", "description", "set_type"]
 
 
 # --- Сериализаторы с вложенностью ---
 
+
 class FeatureSerializer(serializers.ModelSerializer):
     # Показываем не просто ID, а вложенный объект FeatureSet
     feature_set = FeatureSetSerializer(read_only=True)
-    
+
     class Meta:
         model = Feature
         # Мы не показываем created_by, так как это внутренняя информация
-        fields = ['id', 'name', 'description', 'feature_set', 'metadata']
+        fields = ["id", "name", "description", "feature_set", "metadata"]
 
 
 class TraitCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = TraitCategory
-        fields = ['id', 'name']
+        fields = ["id", "name"]
 
 
 class CharacterTraitSerializer(serializers.ModelSerializer):
@@ -52,26 +54,27 @@ class CharacterTraitSerializer(serializers.ModelSerializer):
     Основной сериализатор для "строительных блоков".
     Он будет рекурсивно показывать своих "детей" (подклассы).
     """
+
     # Показываем полные объекты, а не просто ID
     category = TraitCategorySerializer(read_only=True)
     features = FeatureSerializer(many=True, read_only=True)
-    
+
     # Рекурсивный сериализатор для подклассов/подрас
     children = serializers.SerializerMethodField()
 
     class Meta:
         model = CharacterTrait
         fields = [
-            'id',
-            'name',
-            'description',
-            'category',
-            'parent', # parent показываем как ID, чтобы избежать бесконечной вложенности вверх
-            'children', # а детей - как полные объекты
-            'features',
-            'metadata'
+            "id",
+            "name",
+            "description",
+            "category",
+            "parent",  # parent показываем как ID, чтобы избежать бесконечной вложенности вверх
+            "children",  # а детей - как полные объекты
+            "features",
+            "metadata",
         ]
-    
+
     def get_children(self, obj):
         # Находим всех "детей" текущего объекта
         children_queryset = obj.children.all()
@@ -83,4 +86,4 @@ class CharacterTraitSerializer(serializers.ModelSerializer):
 class EquipmentTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = EquipmentTemplate
-        fields = ['id', 'name', 'description', 'metadata']
+        fields = ["id", "name", "description", "metadata"]
