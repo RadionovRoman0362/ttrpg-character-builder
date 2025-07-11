@@ -32,7 +32,7 @@
 
 1.  **Клонируйте репозиторий:**
     ```bash
-    git clone https://github.com/your-username/ttrpg-character-builder.git
+    git clone https://github.com/RadionovRoman0362/ttrpg-character-builder.git
     cd ttrpg-character-builder
     ```
 2.  **Создайте файл `.env`:**
