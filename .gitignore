@@ -14,3 +14,7 @@ db.sqlite3
 
 # Docker
 postgres_data/
+
+# npm
+
+node_modules/
